@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -5,8 +6,10 @@ app = FastAPI()
 class Task(BaseModel):
     id: int
     title: str
-    description: str
-    completed: bool
+    done: bool
+class TaskCreate(BaseModel):
+    title: Optional[str] = None
+
 tasks = [
     {"id": 1, "title": "Task 1", "done": False},
     {"id": 2, "title": "Task 2", "done": True},
@@ -30,3 +33,12 @@ async def get_task(id: int):
         if task["id"] == id:
             return task
     return JSONResponse(status_code=404, content={"error": f"Task {id} not found"})
+
+@app.post("/tasks")
+async def create_task(task: TaskCreate):
+    if not task.title.strip():
+        return JSONResponse(status_code=400, content={"error": "Task title is missing"})
+    next_id = max((t["id"] for t in tasks), default=0) + 1
+    new_task = {"id": next_id, "title": task.title, "done": False}
+    tasks.append(new_task)
+    return JSONResponse(status_code=201, content=new_task)

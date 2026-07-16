@@ -18,18 +18,22 @@ tasks = [
 ]
 @app.get("/")
 async def root():
-    return {"name": "Task API", "version": "1.0", "endpoints": ["/tasks"]}
+     """Returns the API information."""
+     return {"name": "Task API", "version": "1.0", "endpoints": ["/tasks"]}
 
 @app.get("/health")
 async def health():
+    """Returns the health status of the API."""
     return {"status": "ok"}
 
 @app.get("/tasks")
 async def get_tasks():
+    """Returns a list of all tasks."""
     return tasks
 
 @app.get("/tasks/{id}")
 async def get_task(id: int):
+    """Returns a specific task by ID."""
     for task in tasks:
         if task["id"] == id:
             return task
@@ -37,6 +41,7 @@ async def get_task(id: int):
 
 @app.post("/tasks")
 async def create_task(task: TaskCreate):
+    """Creates a new task."""
     if not task.title or not task.title.strip():
         return JSONResponse(status_code=400, content={"error": "Task title is missing"})
     next_id = max((t["id"] for t in tasks), default=0) + 1
@@ -45,12 +50,15 @@ async def create_task(task: TaskCreate):
     return JSONResponse(status_code=201, content=new_task)
 
 def find_task(id:int):
+    """Finds a task by ID."""
     for task in tasks:
         if task["id"] == id:
             return task
     return None
+
 @app.put("/tasks/{id}")
 async def update_task(id:int, task: TaskCreate):
+    """Updates an existing task by ID."""
     t = find_task(id)
     if not t:
         return JSONResponse(status_code=404, content={"error": f"Task {id} not found"})
@@ -65,8 +73,9 @@ async def update_task(id:int, task: TaskCreate):
 
 @app.delete("/tasks/{id}")
 async def delete_task(id:int):
+    """Deletes a task by ID."""
     t = find_task(id)
     if not t:
-        return JSONResponse(status_code=404, content={"error":f"Task{id} not found"})
+        return JSONResponse(status_code=404, content={"error":f"Task {id} not found"})
     tasks.remove(t)
     return Response(status_code=204)

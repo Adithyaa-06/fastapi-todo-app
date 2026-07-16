@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 app = FastAPI()
@@ -60,4 +60,13 @@ async def update_task(id:int, task: TaskCreate):
         t["title"] = task.title
     if task.done is not None:
         t["done"] = task.done
-    return JSONResponse(status_code=200, content=t)             
+    return JSONResponse(status_code=200, content=t)     
+
+
+@app.delete("/tasks/{id}")
+async def delete_task(id:int):
+    t = find_task(id)
+    if not t:
+        return JSONResponse(status_code=404, content={"error":f"Task{id} not found"})
+    tasks.remove(t)
+    return Response(status_code=204)

@@ -57,3 +57,24 @@ A few deliberate decisions worth calling out, since the "right" answer wasn't al
 All endpoints tested via Swagger's "Try it out" — full CRUD cycle confirmed (create, read, update, delete).
 
 ![Swagger UI](Photos)
+
+## AI vs Me
+
+### My prompt
+"Hey I want you to create an CRUD based application for example a todo list of tasks and have get, put, delete, post operation and create a new task with the memory where the new task only title is given whereas id is generated and use languages/frameworks as python/fastapi and dont make complicated codes, use logic for functions and i want the generated codes to efficient and good usage"
+
+### What the AI did better
+Nothing structurally better. The AI's version looked slightly leaner at first glance because it left out the `done` field entirely — but that's not a real strength, it's a missing requirement. A to-do list without a way to mark tasks complete isn't simpler, it's incomplete. That gap exists because my prompt never mentioned `done` at all, not because the AI made a better design choice.
+
+### What it got wrong or silently ignored
+- Never implemented a `done` field, since I never asked for one — the AI built a task list, not a to-do list
+- Used `HTTPException` with a `detail` key for errors, instead of the `{"error": "..."}` shape I actually built, because I never specified an error format
+- Let FastAPI default to `422` for invalid input instead of the `400` my actual spec requires, since I never named specific status codes
+- No root `/` or `/health` endpoints, since I never asked for them
+- Duplicated the same id-lookup loop separately inside `PUT` and `DELETE`, instead of one shared helper function — less efficient and harder to maintain than my version's single `find_task` used by all three routes
+
+### What my prompt forgot to specify
+- Exact status codes expected for each operation (200, 201, 204, 400, 404)
+- The exact JSON shape for error responses
+- The `done` field and what it should track
+- That lookups should be handled through one shared function instead of repeated logic
